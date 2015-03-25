@@ -1874,8 +1874,10 @@ int getLeftSplit(hwc_context_t *ctx, const int& dpy) {
     return lSplit;
 }
 
+
 bool isDisplaySplit(hwc_context_t* ctx, int dpy) {
-    if(ctx->dpyAttr[dpy].xres > qdutils::MAX_DISPLAY_DIM) {
+	return true;
+	if(ctx->dpyAttr[dpy].xres > qdutils::MAX_DISPLAY_DIM) {
         return true;
     }
     //For testing we could split primary via device tree values
