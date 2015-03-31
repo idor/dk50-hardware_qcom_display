@@ -21,6 +21,7 @@
 #define HWC_UTILS_DEBUG 0
 #include <math.h>
 #include <sys/ioctl.h>
+#include <stdio.h>
 #include <linux/fb.h>
 #include <binder/IServiceManager.h>
 #include <EGL/egl.h>
@@ -1585,6 +1586,19 @@ void sanitizeSourceCrop(hwc_rect_t& cropL, hwc_rect_t& cropR,
     }
 }
 
+bool is3D(){
+	int ret = false;
+	FILE* file = fopen("/sys/devices/virtual/graphics/fb0/lumus_resolution_double","r+");
+	if (file != NULL)
+	{
+		ret = fgetc(file);
+		if (ret == 1)
+			return true;
+		fclose(file);
+	}
+	return false;
+}
+
 int configureSplit(hwc_context_t *ctx, hwc_layer_1_t *layer,
         const int& dpy, eMdpFlags& mdpFlagsL, eZorder& z,
         eIsFg& isFg, const eDest& lDest, const eDest& rDest,
@@ -1663,7 +1677,14 @@ int configureSplit(hwc_context_t *ctx, hwc_layer_1_t *layer,
     if(rDest != OV_INVALID) {
         tmp_cropR = crop;
         tmp_dstR = dst;
-        hwc_rect_t scissor = {lSplit, 0, hw_w, hw_h };
+        hwc_rect_t scissor;
+		if ( is3D()) { // 3d
+			hwc_rect_t tmp =  { lSplit, 0, hw_w, hw_h };
+			scissor = tmp;
+		} else {
+			hwc_rect_t tmp = { 0, 0, lSplit, hw_h };
+			scissor = tmp;
+		}
         scissor = getIntersection(ctx->mViewFrame[dpy], scissor);
         qhwc::calculate_crop_rects(tmp_cropR, tmp_dstR, scissor, 0);
     }
