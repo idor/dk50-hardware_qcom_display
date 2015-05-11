@@ -203,6 +203,7 @@ void setListStats(hwc_context_t *ctx, hwc_display_contents_1_t *list,
         int dpy);
 void initContext(hwc_context_t *ctx);
 void closeContext(hwc_context_t *ctx);
+bool setIsThreeDee(hwc_context_t *ctx);
 //Crops source buffer against destination and FB boundaries
 void calculate_crop_rects(hwc_rect_t& crop, hwc_rect_t& dst,
                          const hwc_rect_t& scissor, int orient);
@@ -486,6 +487,7 @@ struct hwc_context_t {
 
     // Panel reset flag will be set if BTA check fails
     bool mPanelResetStatus;
+    bool mIsThreeDee;
 };
 
 namespace qhwc {

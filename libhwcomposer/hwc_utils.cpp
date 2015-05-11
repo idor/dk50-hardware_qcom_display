@@ -130,6 +130,7 @@ static int openFramebufferDevice(hwc_context_t *ctx)
 void initContext(hwc_context_t *ctx)
 {
     openFramebufferDevice(ctx);
+    setIsThreeDee(ctx);
     ctx->mMDP.version = qdutils::MDPVersion::getInstance().getMDPVersion();
     ctx->mMDP.hasOverlay = qdutils::MDPVersion::getInstance().hasOverlay();
     ctx->mMDP.panel = qdutils::MDPVersion::getInstance().getPanelType();
@@ -1586,17 +1587,22 @@ void sanitizeSourceCrop(hwc_rect_t& cropL, hwc_rect_t& cropR,
     }
 }
 
-bool is3D(){
+bool setIsThreeDee(hwc_context_t *ctx) {
 	int ret = false;
-	FILE* file = fopen("/sys/devices/virtual/graphics/fb0/lumus_resolution_double","r+");
-	if (file != NULL)
-	{
+	FILE* file =
+			fopen(
+					"/sys/devices/virtual/graphics/fb0/lumus_resolution_double",
+					"r+");
+	if (file != NULL) {
 		ret = fgetc(file);
-		if (ret == 1)
-			return true;
 		fclose(file);
+		if (ret == 1) {
+			ctx->mIsThreeDee = true;
+			return ctx->mIsThreeDee;
+		}
 	}
-	return false;
+	ctx->mIsThreeDee = false;
+	return ctx->mIsThreeDee;
 }
 
 int configureSplit(hwc_context_t *ctx, hwc_layer_1_t *layer,
@@ -1678,7 +1684,7 @@ int configureSplit(hwc_context_t *ctx, hwc_layer_1_t *layer,
         tmp_cropR = crop;
         tmp_dstR = dst;
         hwc_rect_t scissor;
-		if ( is3D()) { // 3d
+		if ( ctx->mIsThreeDee ) {
 			hwc_rect_t tmp =  { lSplit, 0, hw_w, hw_h };
 			scissor = tmp;
 		} else {
